@@ -1,0 +1,4 @@
+[submodule "lib/socialscraper"]
+	path = lib/socialscraper
+	url = https://github.com/alpaca/socialscraper.git
+	branch = master
