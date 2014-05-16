@@ -56,6 +56,11 @@ def check_relevant(item):
 
 	return False, None
 
+from dateutil.parser import parse
+
+earlier_date = parse("4-1-2014")
+later_date = parse("4-1-2014")
+
 # Textbook Exchange # 357858800927717
 # for item in get_feed(api, '357858800927717'):
 # 	is_relevant, message = check_relevant(item)
@@ -64,14 +69,10 @@ def check_relevant(item):
 # 		relevant_posts.append(item)
 
 # Free and For Sale # 357858834261047
-count = 0
-for item in get_feed(api, '357858834261047'):
-	if count > 100: break
+for item in get_feed(api, '357858834261047', earlier_date=earlier_date, later_date=later_date):
 	is_relevant, message = check_relevant(item)
 	if is_relevant:
 		relevant_posts.append(item)
-	count = count + 1
-
 
 # highlight the  RELEVANT_STRINGS in relevant_posts
 for i, post in enumerate(relevant_posts):
