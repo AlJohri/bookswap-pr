@@ -1,4 +1,4 @@
-import os, pprint
+import os, json, pprint
 import environment
 
 from facebook import GraphAPI, GraphAPIError
@@ -30,17 +30,15 @@ relevant_posts = []
 def check_relevant(item):
 
 	def test_message_relevant(message):
-		
 		for test_string in RELEVANT_STRINGS:
 			if test_string in message:
 				return True
-
 		return False
 
 	# Set message, if it exists
 	message = item.get("message")
 	if message and test_message_relevant(message):
-		return True, message
+		return True, item
 
 	# Set comments, if they exist
 	comments = item.get("comments",[])
@@ -50,7 +48,7 @@ def check_relevant(item):
 	for comment in comments:
 		message = comment.get("message")
 		if message and test_message_relevant(message):
-			return True, message
+			return True, item
 
 	return False, None
 
@@ -70,8 +68,39 @@ for item in get_feed(api, '357858834261047'):
 		relevant_posts.append(item)
 	count = count + 1
 
-with open('test.txt', 'w') as f:
 
-	stringified_relevant_posts = map(lambda post: str(post['message']), relevant_posts)
+# highlight the  RELEVANT_STRINGS in relevant_posts
+for i, post in enumerate(relevant_posts):
+	# loop through strings
+	for test_string in RELEVANT_STRINGS:
+		relevant_posts[i]['message'] = relevant_posts[i]['message'].replace(test_string, "<strong>%s</strong>" % test_string)
+		if relevant_posts[i].get('comments'):
+			for j, comment in enumerate(relevant_posts[i]['comments']['data']):
+				message = relevant_posts[i]['comments']['data'][j].get('message')
+				if message:
+					relevant_posts[i]['comments']['data'][j]['message'] = relevant_posts[i]['comments']['data'][j]['message'].replace(test_string, "<strong>%s</strong>" % test_string)
 
-	f.write("\n\n\n\n".join(stringified_relevant_posts))
+# write the highlighted relevant_posts to an html file
+with open('test.html', 'w') as f:
+
+	blah = ""
+	blah += "<style>"
+	# blah += ".post { float: left; }"
+	blah += ".comment { text-indent: 1em; }"
+	blah += "</style>"
+	for post in relevant_posts:
+		blah += "<div class='post'>"
+		blah += post['message']
+
+		if post.get('comments'):
+			for comment in post['comments']['data']:
+				blah += "<div class='comment'>"
+				blah += comment['message']
+				blah += "</div>"
+
+		blah += "</div>"
+		blah += "<hr>"
+		
+
+	f.write(blah)
+
