@@ -1,4 +1,4 @@
-import os, json, pprint
+import os, re, json, pprint
 import environment
 
 from facebook import GraphAPI, GraphAPIError
@@ -7,9 +7,11 @@ from socialscraper.facebook.graphapi import get_feed
 FACEBOOK_USER_TOKEN = os.getenv('FACEBOOK_USER_TOKEN')
 
 RELEVANT_STRINGS = [
-	'book', 
-	'text'
+	'book',
+	'textbook'
 ]
+
+regex = lambda test_string: re.compile(r'\b%s\b' % test_string, flags=re.I | re.U)
 
 api = GraphAPI(FACEBOOK_USER_TOKEN)
 try:
@@ -30,9 +32,11 @@ relevant_posts = []
 def check_relevant(item):
 
 	def test_message_relevant(message):
+
 		for test_string in RELEVANT_STRINGS:
-			if test_string in message:
+			if regex(test_string).findall(message):
 				return True
+
 		return False
 
 	# Set message, if it exists
@@ -52,14 +56,14 @@ def check_relevant(item):
 
 	return False, None
 
-# Textbook Exchange
+# Textbook Exchange # 357858800927717
 # for item in get_feed(api, '357858800927717'):
 # 	is_relevant, message = check_relevant(item)
 # 	if is_relevant:
 # 		print message
 # 		relevant_posts.append(item)
 
-# Free and For Sale
+# Free and For Sale # 357858834261047
 count = 0
 for item in get_feed(api, '357858834261047'):
 	if count > 100: break
@@ -87,14 +91,30 @@ with open('test.html', 'w') as f:
 	blah += "<style>"
 	# blah += ".post { float: left; }"
 	blah += ".comment { text-indent: 1em; }"
+	blah += ".author { }"
+	blah += ".author::after {content: ': '; padding-right: 5px; }"
 	blah += "</style>"
+
 	for post in relevant_posts:
+
 		blah += "<div class='post'>"
+		
+		blah += "<span class='author'>"
+		blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
+		blah += post['from']['name']
+		blah += "</a></span>"
+
 		blah += post['message']
 
 		if post.get('comments'):
 			for comment in post['comments']['data']:
 				blah += "<div class='comment'>"
+
+				blah += "<span class='author'>"
+				blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
+				blah += post['from']['name']
+				blah += "</a></span>"
+
 				blah += comment['message']
 				blah += "</div>"
 
@@ -102,5 +122,5 @@ with open('test.html', 'w') as f:
 		blah += "<hr>"
 		
 
-	f.write(blah)
+	f.write(blah.encode('utf-8', 'ignore'))
 
