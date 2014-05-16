@@ -1,0 +1,11 @@
+beautifulsoup4==4.3.2
+cssselect==0.9.1
+enum34==0.9.23
+facebook-sdk==0.4.0
+lxml==3.3.4
+mechanize==0.2.5
+python-dateutil==2.2
+requests==2.2.1
+six==1.6.1
+-e git://github.com/alpaca/socialscraper.git@eb48a444300eb8a69282209508cb9212d5dbdb7b#egg=socialscraper-master
+wsgiref==0.1.2
