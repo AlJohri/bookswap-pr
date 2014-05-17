@@ -65,8 +65,8 @@ if __name__ == "__main__":
 		start = None
 		end = None
 	elif len(sys.argv) == 3:
-		start = parse(sys.argv.get(1))
-		end = parse(sys.argv.get(2))
+		start = parse(sys.argv[1])
+		end = parse(sys.argv[2])
 	else:
 		print "usage: python tool.py 4-1-2014 4-2-2014"
 		sys.exit()
@@ -103,11 +103,10 @@ if __name__ == "__main__":
 	with open('test.html', 'w') as f:
 
 		blah = ""
+
 		blah += "<style>"
-		# blah += ".post { float: left; }"
-		blah += ".comment { text-indent: 1em; }"
-		blah += ".author { }"
-		blah += ".author::after {content: ': '; padding-right: 5px; }"
+		blah += 	".comment { text-indent: 1em; }"
+		blah += 	".author::after {content: ': '; padding-right: 5px; }"
 		blah += "</style>"
 
 		for post in relevant_posts:
@@ -115,9 +114,10 @@ if __name__ == "__main__":
 			blah += "<div class='post'>"
 			
 			blah += "<span class='author'>"
-			blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
-			blah += post['from']['name']
-			blah += "</a></span>"
+			blah += 	"<a href='https://www.facebook.com/%s'>" % post['from']['id']
+			blah += 		post['from']['name']
+			blah += 	"</a>"
+			blah += "</span>"
 
 			blah += post['message']
 
@@ -125,17 +125,18 @@ if __name__ == "__main__":
 				for comment in post['comments']['data']:
 					blah += "<div class='comment'>"
 
-					blah += "<span class='author'>"
-					blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
-					blah += post['from']['name']
-					blah += "</a></span>"
+					blah += 	"<span class='author'>"
+					blah += 		"<a href='https://www.facebook.com/%s'>" % post['from']['id']
+					blah += 			post['from']['name']
+					blah += 		"</a>"
+					blah += 	"</span>"
 
-					blah += comment['message']
+					blah += 	comment['message']
+
 					blah += "</div>"
 
 			blah += "</div>"
 			blah += "<hr>"
 			
-
 		f.write(blah.encode('utf-8', 'ignore'))
 
