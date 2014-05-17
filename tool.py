@@ -1,4 +1,4 @@
-import os, re, json, pprint
+import os, re, sys, json, pprint
 import environment
 
 from facebook import GraphAPI, GraphAPIError
@@ -9,8 +9,8 @@ from dateutil.parser import parse
 FACEBOOK_USER_TOKEN = os.getenv('FACEBOOK_USER_TOKEN')
 
 RELEVANT_STRINGS = [
-	'book',
-	'textbook'
+	'textbook',
+	'book'
 ]
 
 regex = lambda test_string: re.compile(r'\b%s\b' % test_string, flags=re.I | re.U)
@@ -21,7 +21,7 @@ try:
 except GraphAPIError as e:
 	print e
 	print "Update your .secret file"
-	import sys; sys.exit()
+	sys.exit()
 
 # Formatting/Tabbing to make the JSON data look good
 pp = pprint.PrettyPrinter(indent=4)
@@ -59,71 +59,83 @@ def check_relevant(item):
 # Main code
 ###############################################################
 
-start = parse("4-1-2014")
-end = parse("4-2-2014")
+if __name__ == "__main__":
 
-groups = [
-	('Free and For Sale', '357858834261047'), 
-	('Textbook Exchange', '357858800927717')
-]
+	if len(sys.argv) == 1:
+		start = None
+		end = None
+	elif len(sys.argv) == 3:
+		start = parse(sys.argv.get(1))
+		end = parse(sys.argv.get(2))
+	else:
+		print "usage: python tool.py 4-1-2014 4-2-2014"
+		sys.exit()
 
-relevant_posts = []
+	# start = parse("4-1-2014")
+	# end = parse("4-2-2014")
 
-for group in groups:
-	print "Scraping %s (%s)" % group
-	for item in get_feed(api, group[1], start=start, end=end):
-		is_relevant, message = check_relevant(item)
-		print item['id'], item['created_time'], item['updated_time'], is_relevant
-		if is_relevant: relevant_posts.append(item)
+	groups = [
+		('Free and For Sale', '357858834261047'), 
+		('Textbook Exchange', '357858800927717')
+	]
 
-# highlight the RELEVANT_STRINGS in relevant_posts
-for i, post in enumerate(relevant_posts):
-	# loop through strings
-	for test_string in RELEVANT_STRINGS:
-		relevant_posts[i]['message'] = relevant_posts[i]['message'].replace(test_string, "<strong>%s</strong>" % test_string)
-		if relevant_posts[i].get('comments'):
-			for j, comment in enumerate(relevant_posts[i]['comments']['data']):
-				message = relevant_posts[i]['comments']['data'][j].get('message')
-				if message:
-					relevant_posts[i]['comments']['data'][j]['message'] = relevant_posts[i]['comments']['data'][j]['message'].replace(test_string, "<strong>%s</strong>" % test_string)
+	relevant_posts = []
 
-# write the highlighted relevant_posts to an html file
-with open('test.html', 'w') as f:
+	for group in groups:
+		print "Scraping %s (%s)" % group
+		for item in get_feed(api, group[1], start=start, end=end):
+			is_relevant, message = check_relevant(item)
+			print item['id'], item['created_time'], item['updated_time'], is_relevant
+			if is_relevant: relevant_posts.append(item)
 
-	blah = ""
-	blah += "<style>"
-	# blah += ".post { float: left; }"
-	blah += ".comment { text-indent: 1em; }"
-	blah += ".author { }"
-	blah += ".author::after {content: ': '; padding-right: 5px; }"
-	blah += "</style>"
+	# highlight the RELEVANT_STRINGS in relevant_posts
+	for i, post in enumerate(relevant_posts):
+		# loop through strings
+		for test_string in RELEVANT_STRINGS:
+			relevant_posts[i]['message'] = relevant_posts[i]['message'].replace(test_string, "<strong>%s</strong>" % test_string)
+			if relevant_posts[i].get('comments'):
+				for j, comment in enumerate(relevant_posts[i]['comments']['data']):
+					message = relevant_posts[i]['comments']['data'][j].get('message')
+					if message:
+						relevant_posts[i]['comments']['data'][j]['message'] = relevant_posts[i]['comments']['data'][j]['message'].replace(test_string, "<strong>%s</strong>" % test_string)
 
-	for post in relevant_posts:
+	# write the highlighted relevant_posts to an html file
+	with open('test.html', 'w') as f:
 
-		blah += "<div class='post'>"
-		
-		blah += "<span class='author'>"
-		blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
-		blah += post['from']['name']
-		blah += "</a></span>"
+		blah = ""
+		blah += "<style>"
+		# blah += ".post { float: left; }"
+		blah += ".comment { text-indent: 1em; }"
+		blah += ".author { }"
+		blah += ".author::after {content: ': '; padding-right: 5px; }"
+		blah += "</style>"
 
-		blah += post['message']
+		for post in relevant_posts:
 
-		if post.get('comments'):
-			for comment in post['comments']['data']:
-				blah += "<div class='comment'>"
+			blah += "<div class='post'>"
+			
+			blah += "<span class='author'>"
+			blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
+			blah += post['from']['name']
+			blah += "</a></span>"
 
-				blah += "<span class='author'>"
-				blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
-				blah += post['from']['name']
-				blah += "</a></span>"
+			blah += post['message']
 
-				blah += comment['message']
-				blah += "</div>"
+			if post.get('comments'):
+				for comment in post['comments']['data']:
+					blah += "<div class='comment'>"
 
-		blah += "</div>"
-		blah += "<hr>"
-		
+					blah += "<span class='author'>"
+					blah += "<a href='https://www.facebook.com/%s'>" % post['from']['id']
+					blah += post['from']['name']
+					blah += "</a></span>"
 
-	f.write(blah.encode('utf-8', 'ignore'))
+					blah += comment['message']
+					blah += "</div>"
+
+			blah += "</div>"
+			blah += "<hr>"
+			
+
+		f.write(blah.encode('utf-8', 'ignore'))
 
