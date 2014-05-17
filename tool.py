@@ -4,6 +4,8 @@ import environment
 from facebook import GraphAPI, GraphAPIError
 from socialscraper.facebook.graphapi import get_feed
 
+from dateutil.parser import parse
+
 FACEBOOK_USER_TOKEN = os.getenv('FACEBOOK_USER_TOKEN')
 
 RELEVANT_STRINGS = [
@@ -23,9 +25,6 @@ except GraphAPIError as e:
 
 # Formatting/Tabbing to make the JSON data look good
 pp = pprint.PrettyPrinter(indent=4)
-
-# Empty array to be populated with posts that are relevant to BookSwap
-relevant_posts = []
 
 # Take a post and traverse its message and comments
 # while checking its relevancy
@@ -56,25 +55,28 @@ def check_relevant(item):
 
 	return False, None
 
-from dateutil.parser import parse
+###############################################################
+# Main code
+###############################################################
 
-earlier_date = parse("4-1-2014")
-later_date = parse("4-1-2014")
+start = parse("4-1-2014")
+end = parse("4-2-2014")
 
-# Textbook Exchange # 357858800927717
-# for item in get_feed(api, '357858800927717'):
-# 	is_relevant, message = check_relevant(item)
-# 	if is_relevant:
-# 		print message
-# 		relevant_posts.append(item)
+groups = [
+	('Free and For Sale', '357858834261047'), 
+	('Textbook Exchange', '357858800927717')
+]
 
-# Free and For Sale # 357858834261047
-for item in get_feed(api, '357858834261047', earlier_date=earlier_date, later_date=later_date):
-	is_relevant, message = check_relevant(item)
-	if is_relevant:
-		relevant_posts.append(item)
+relevant_posts = []
 
-# highlight the  RELEVANT_STRINGS in relevant_posts
+for group in groups:
+	print "Scraping %s (%s)" % group
+	for item in get_feed(api, group[1], start=start, end=end):
+		is_relevant, message = check_relevant(item)
+		print item['id'], item['created_time'], item['updated_time'], is_relevant
+		if is_relevant: relevant_posts.append(item)
+
+# highlight the RELEVANT_STRINGS in relevant_posts
 for i, post in enumerate(relevant_posts):
 	# loop through strings
 	for test_string in RELEVANT_STRINGS:
