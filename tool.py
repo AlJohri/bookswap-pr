@@ -113,13 +113,23 @@ if __name__ == "__main__":
 
 			blah += "<div class='post'>"
 			
+			blah += "<div class='stamp'>"
+			blah += 	"Created: %s, Last Edited: %s" % (post["created_time"][:10], post["updated_time"][:10])
+			blah += "</div>"
+
 			blah += "<span class='author'>"
-			blah += 	"<a href='https://www.facebook.com/%s'>" % post['from']['id']
-			blah += 		post['from']['name']
+			blah += 	"<a href='https://www.facebook.com/%s'>" % post["from"]["id"]
+			blah += 		post["from"]["name"]
 			blah += 	"</a>"
 			blah += "</span>"
 
-			blah += post['message']
+			blah += "<span class='message'>"
+			blah += 	"<a href='%s'>" % post['actions'][0]['link']
+			blah += 		post['message']
+			blah += 	"</a>"
+			blah += "</span>"
+
+			blah += "<div></div>"
 
 			if post.get('comments'):
 				for comment in post['comments']['data']:
