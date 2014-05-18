@@ -114,6 +114,7 @@ if __name__ == "__main__":
 			blah += "<div class='post'>"
 			
 			blah += "<div class='stamp'>"
+			blah +=		"Location: %s <br>" % post['to']['data'][0]['name']
 			blah += 	"Created: %s, Last Edited: %s" % (post["created_time"][:10], post["updated_time"][:10])
 			blah += "</div>"
 
